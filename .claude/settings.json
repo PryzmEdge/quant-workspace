@@ -1,0 +1,77 @@
+{
+  "_comment": "Hard constraints only. Probabilistic behavior goes in CLAUDE.md. See docs/v8.md Part 3 and Part 6.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-dangerous-bash.sh",
+            "description": "Block destructive shell commands before execution"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/log-mcp-invocation.sh",
+            "description": "Log every MCP tool invocation for audit trail"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-write-to-output-without-approval.sh",
+            "description": "Block writes to output/ unless operator_approved=true in stage frontmatter"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/validate-mcp-response.py",
+            "description": "Validate every MCP tool response before it enters reasoning context. MCP is not a trusted execution boundary. See docs/v8.md Part 8."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/log-bash-execution.sh",
+            "description": "Append bash execution record to audit log"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(make:*)",
+      "Bash(python:*)",
+      "Bash(ripgrep:*)",
+      "Bash(grep:*)",
+      "Read",
+      "Write"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(DROP *)",
+      "Bash(truncate *)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)"
+    ]
+  }
+}
