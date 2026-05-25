@@ -1,16 +1,17 @@
-# Architecture Decision Records — Index
-
-*This directory contains Architecture Decision Records (ADRs) for the PryzmEdge quant workspace.*
-*Standard: ISO 42010:2022 §5.6*
-
+---
+title: "ADR Index"
+status: active
+repo: "https://github.com/PryzmEdge/Markdown-Architecture"
 ---
 
-| ADR | Title | Status | Date |
-|---|---|---|---|
-| ADR-001 | PostgreSQL as state kernel and provenance ledger | Pending | 2026-05-23 |
-| ADR-002 | Automerge/Yjs bytea-blob CRDT pattern over Postgres | Pending | 2026-05-23 |
-| ADR-003 | Datalog (pg_mentat) for lattice traversal over recursive CTEs | Pending | 2026-05-23 |
-| ADR-004 | FIDES two-element product lattice as authority substrate | Pending | 2026-05-23 |
-| ADR-005 | Temporal/DBOS workflow-activity split for durable governance | Pending | 2026-05-23 |
+# Architecture Decision Records — Index
 
-*ADR bodies to be added in subsequent commits.*
+This index tracks all ADRs for the [Markdown Architecture](https://github.com/PryzmEdge/Markdown-Architecture) project.
+
+| ADR | Title | Status |
+|---|---|---|
+| [ADR-001](ADR-001-postgres-state-kernel.md) | PostgreSQL as state kernel and provenance ledger | Accepted |
+| [ADR-002](ADR-002-crdt-bytea-pattern.md) | Automerge/Yjs bytea-blob CRDT pattern over Postgres | Accepted |
+| [ADR-003](ADR-003-datalog-policy-engine.md) | Datalog as policy and query engine | Accepted |
+| [ADR-004](ADR-004-fides-label-lattice.md) | FIDES information-flow label lattice | Accepted |
+| [ADR-005](ADR-005-temporal-dbos-workflow-split.md) | Temporal/DBOS workflow split for durable governance | Accepted |

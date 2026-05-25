@@ -1,11 +1,11 @@
 ---
-version: "9.0.0"
+version: "10.0.0"
 tokens: "≤800"
 scope: "navigation, structure, identity"
 do_not_use_for: "hard constraints, behavioral enforcement"
 ---
 
-# Quant Workspace — CLAUDE.md
+# Markdown Architecture — CLAUDE.md
 
 > **Scope**: Structural navigation and identity only. Hard constraints live in hooks. Schema contracts live in `_config/stage-contract.py`. See `docs/v10-draft.md` for the current engineering position paper.
 
@@ -13,14 +13,14 @@ do_not_use_for: "hard constraints, behavioral enforcement"
 
 ## Workspace Identity
 
-This is a quant research and AI-native DevOps workspace structured with the Interpretable Context Methodology (ICM). Every stage is a self-contained unit with explicit Inputs, Process, and Outputs declared in a `CONTEXT.md` file.
+This is the **Markdown Architecture** workspace — a research and AI-native DevOps environment structured with the Interpretable Context Methodology (ICM). The thesis: Markdown is a human-readable orchestration substrate, not an execution environment. Every stage is a self-contained unit with explicit Inputs, Process, and Outputs declared in a `CONTEXT.md` file.
 
 ---
 
 ## Folder Structure
 
 ```
-quant-workspace/
+Markdown-Architecture/
 ├── CLAUDE.md                        ← This file (≤800 tokens, navigation only)
 ├── docs/
 │   ├── v10-draft.md                 ← Current canonical engineering position paper
@@ -28,7 +28,7 @@ quant-workspace/
 │   └── [v8, v9 archived]
 ├── _config/
 │   ├── domain-rules.md              ← Constraints applied at every stage
-│   └── stage-contract.py            ← Pydantic-style StageContract validator
+│   └── stage-contract.py            ← StageContract validator
 ├── stages/
 │   ├── 00-intake/
 │   │   └── CONTEXT.md
@@ -75,8 +75,7 @@ stage: "00-intake" | "01-research" | "02-analysis" | "03-output"
 |---|---|
 | File paths, build commands | CLAUDE.md (here) ✅ |
 | Schema field definitions | `_config/stage-contract.py` ✅ |
-| "Never run `DROP TABLE`" | `.claude/settings.json` hooks ✅ |
-| "Always validate MCP responses" | `.claude/settings.json` hooks ✅ |
+| Hard constraints | `.claude/settings.json` hooks ✅ |
 | Domain-specific constraints | `_config/domain-rules.md` ✅ |
 | Behavioral rules | **Not here** — use hooks ❌ |
 
@@ -99,7 +98,7 @@ python _config/stage-contract.py --stage 02-analysis
 
 ## Skills
 
-Load domain-specific skills on demand — do not load all skills on every turn:
+Load on demand — do not load all skills on every turn:
 
 - `domain-validator` — validate stage artifacts against `domain-rules.md`
 - `context-compiler` — assemble token-budgeted context from stage inputs
