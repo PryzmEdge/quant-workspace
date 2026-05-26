@@ -1,5 +1,5 @@
 # =============================================================================
-# Markdown Architecture — Makefile v1.0
+# Markdown Architecture — Makefile v1.1
 # =============================================================================
 # Usage:
 #   make all                  — run all stages in dependency order
@@ -10,6 +10,8 @@
 #   make validate             — validate all stage contracts
 #   make validate-00          — validate a single stage
 #   make audit                — write a PromptExecutionReceipt for Stage 03
+#   make test                 — run the full pytest suite
+#   make test-verbose         — run tests with full output
 #   make clean                — remove non-approved artifacts
 #   make help                 — print this message
 #
@@ -27,12 +29,10 @@ OPERATOR       ?= operator
 
 STAGES         := 00-intake 01-research 02-analysis 03-output
 
-# Sentinel files: touched when a stage passes validation.
-# Stored in .make/ so they don't pollute stage output dirs.
 MAKE_DIR       := .make
 SENTINELS      := $(STAGES:%=$(MAKE_DIR)/%.validated)
 
-.PHONY: all validate clean help audit \
+.PHONY: all validate clean help audit test test-verbose \
 	stage-00-intake stage-01-research stage-02-analysis stage-03-output \
 	validate-00 validate-01 validate-02 validate-03
 
@@ -52,6 +52,8 @@ help:
 	@echo "  make validate           validate all stage contracts"
 	@echo "  make validate-00        validate a single stage (00..03)"
 	@echo "  make audit              write PromptExecutionReceipt for Stage 03"
+	@echo "  make test               run full pytest suite"
+	@echo "  make test-verbose       run tests with -v --tb=short"
 	@echo "  make clean              remove non-approved artifacts"
 	@echo ""
 	@echo "Parallel validation: make -j\$$(nproc) validate"
@@ -65,7 +67,7 @@ $(MAKE_DIR):
 	@mkdir -p $(MAKE_DIR)
 
 # =============================================================================
-# Validate targets (individual)
+# Validate targets
 # =============================================================================
 
 $(MAKE_DIR)/00-intake.validated: $(MAKE_DIR)
@@ -88,13 +90,11 @@ $(MAKE_DIR)/03-output.validated: $(MAKE_DIR)/02-analysis.validated
 	$(PYTHON) $(CONTRACT) --stage 03-output
 	@touch $@
 
-# Named shorthand targets
 validate-00: $(MAKE_DIR)/00-intake.validated
 validate-01: $(MAKE_DIR)/01-research.validated
 validate-02: $(MAKE_DIR)/02-analysis.validated
 validate-03: $(MAKE_DIR)/03-output.validated
 
-# Validate all stages (respects -j for parallelism on independent branches)
 validate:
 	@echo "=== Validating all stages ==="
 	$(PYTHON) $(CONTRACT) --stage all
@@ -102,18 +102,10 @@ validate:
 
 # =============================================================================
 # Stage run targets
-# (Each target validates its inputs, then runs the stage, then validates output)
 # =============================================================================
 
 stage-00-intake: $(MAKE_DIR)
 	@echo "=== Stage 00 — Intake ==="
-	@echo "Agent: Problem Qualification Agent"
-	@echo "Input: raw problem statement"
-	@echo "Output: stages/00-intake/output/problem.md"
-	@echo ""
-	@echo ">> Running intake process..."
-	@echo "   (Invoke your agent here, e.g.: claude run --stage 00-intake)"
-	@echo ""
 	@echo ">> Validating output..."
 	$(PYTHON) $(CONTRACT) --stage 00-intake
 	@touch $(MAKE_DIR)/00-intake.validated
@@ -121,13 +113,6 @@ stage-00-intake: $(MAKE_DIR)
 
 stage-01-research: $(MAKE_DIR)/00-intake.validated
 	@echo "=== Stage 01 — Research ==="
-	@echo "Agent: Research & Evidence Agent"
-	@echo "Input: stages/00-intake/output/problem.md"
-	@echo "Output: brief.md, sources.md, contradictions.md"
-	@echo ""
-	@echo ">> Running research process..."
-	@echo "   (Invoke your agent here, e.g.: claude run --stage 01-research)"
-	@echo ""
 	@echo ">> Validating output..."
 	$(PYTHON) $(CONTRACT) --stage 01-research
 	@touch $(MAKE_DIR)/01-research.validated
@@ -135,13 +120,6 @@ stage-01-research: $(MAKE_DIR)/00-intake.validated
 
 stage-02-analysis: $(MAKE_DIR)/01-research.validated
 	@echo "=== Stage 02 — Analysis ==="
-	@echo "Agent: Synthesis & Risk Agent"
-	@echo "Input: brief.md, sources.md, contradictions.md"
-	@echo "Output: synthesis.md, risk.md"
-	@echo ""
-	@echo ">> Running analysis process..."
-	@echo "   (Invoke your agent here, e.g.: claude run --stage 02-analysis)"
-	@echo ""
 	@echo ">> Validating output..."
 	$(PYTHON) $(CONTRACT) --stage 02-analysis
 	@touch $(MAKE_DIR)/02-analysis.validated
@@ -149,16 +127,8 @@ stage-02-analysis: $(MAKE_DIR)/01-research.validated
 
 stage-03-output: $(MAKE_DIR)/02-analysis.validated
 	@echo "=== Stage 03 — Output ==="
-	@echo "Agent: Output Assembly Agent"
-	@echo "Input: synthesis.md, risk.md, problem.md"
-	@echo "Output: <slug>.md, receipts/<timestamp>.json"
-	@echo ""
-	@echo ">> Running output assembly..."
-	@echo "   (Invoke your agent here, e.g.: claude run --stage 03-output)"
-	@echo ""
 	@echo ">> Writing audit receipt..."
 	$(MAKE) audit
-	@echo ""
 	@echo ">> Validating output..."
 	$(PYTHON) $(CONTRACT) --stage 03-output
 	@touch $(MAKE_DIR)/03-output.validated
@@ -183,16 +153,25 @@ audit:
 	$(PYTHON) $(AUDIT_LOGGER) --stage 03-output --operator $(OPERATOR)
 
 # =============================================================================
+# Test
+# =============================================================================
+
+test:
+	@echo "=== Running test suite ==="
+	$(PYTHON) -m pytest tests/ -q --tb=short
+	@echo "=== Tests complete ==="
+
+test-verbose:
+	$(PYTHON) -m pytest tests/ -v --tb=short
+
+# =============================================================================
 # Clean
 # =============================================================================
 
 clean:
 	@echo "Removing non-approved artifacts and sentinel files..."
-	@# Remove sentinel cache
 	@rm -rf $(MAKE_DIR)
-	@# Remove ATTENTION.md flags (resolved by clean)
 	@find stages/ -name "ATTENTION.md" -delete 2>/dev/null || true
-	@# Remove receipt stubs (not full receipts)
 	@find stages/ -path "*/receipts/stub-*.json" -delete 2>/dev/null || true
 	@echo "Clean complete. Approved artifacts in output/ dirs are preserved."
 
