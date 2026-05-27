@@ -10,6 +10,7 @@ A research and AI-native DevOps workspace structured with the Interpretable Cont
 - `docs/adr/` — Architecture Decision Records (ADR-001 through ADR-005)
 - `stages/` — ICM pipeline: 00-intake → 01-research → 02-analysis → 03-output
 - `_config/` — Domain rules and stage contract validator
+- `proof/` — Stage 1 buildability proof (DBOS-style durable workflow + Postgres + receipts). See [`proof/README.md`](proof/README.md) for the Diataxis docs (tutorial / how-to / reference / explanation).
 - `.claude/` — Hooks and hard constraints
 
 ## Quick Start
